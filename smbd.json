@@ -1,0 +1,13 @@
+ {
+     "description": "SMBD Pipeline",
+     "processors": [
+       {
+         "grok": {
+           "field": "smbd",
+           "patterns": [
+"%{MONTH:syslog_month} %{MONTHDAY:syslog_day} %{TIME:syslog_time} %{HOSTNAME:srv_name} smbd_audit: INTERTRANSL/%{GREEDYDATA:user_name}\\|%{IP:user_ip}\\|%{WORD:share_name}\\|%{WORD:action}\\|%{DATA:sucess}\\|%{GREEDYDATA:path}"
+           ]
+         }
+       }
+     ]
+ }

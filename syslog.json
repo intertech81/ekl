@@ -1,0 +1,57 @@
+{
+  "filebeat-7.2.0-system-syslog-pipeline" : {
+    "description" : "Pipeline for parsing Syslog messages.",
+    "processors" : [
+      {
+        "grok" : {
+          "ignore_missing" : true,
+          "field" : "message",
+          "patterns" : [
+            """%{SYSLOGTIMESTAMP:system.syslog.timestamp} %{SYSLOGHOST:host.hostname} %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?: %{GREEDYMULTILINE:system.syslog.message}""",
+            "%{SYSLOGTIMESTAMP:system.syslog.timestamp} %{GREEDYMULTILINE:system.syslog.message}",
+            """%{TIMESTAMP_ISO8601:system.syslog.timestamp} %{SYSLOGHOST:host.hostname} %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?: %{GREEDYMULTILINE:system.syslog.message}"""
+          ],
+          "pattern_definitions" : {
+            "GREEDYMULTILINE" : "(.|\n)*"
+          }
+        }
+      },
+      {
+        "remove" : {
+          "field" : "message"
+        }
+      },
+      {
+        "rename" : {
+          "field" : "system.syslog.message",
+          "target_field" : "message",
+          "ignore_missing" : true
+        }
+      },
+      {
+        "date" : {
+          "field" : "system.syslog.timestamp",
+          "target_field" : "@timestamp",
+          "formats" : [
+            "MMM  d HH:mm:ss",
+            "MMM dd HH:mm:ss",
+            "ISO8601"
+          ],
+          "ignore_failure" : true
+        }
+      },
+      {
+        "remove" : {
+          "field" : "system.syslog.timestamp"
+        }
+      }
+    ],
+    "on_failure" : [
+      {
+        "set" : {
+          "field" : "error.message",
+          "value" : "{{ _ingest.on_failure_message }}"
+        }
+      }
+    ]
+  }
